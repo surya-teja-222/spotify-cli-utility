@@ -1,22 +1,21 @@
 {
-    "name": "spotify-cli",
-    "version": "1.0.0",
+    "name": "spotify-cli-util",
+    "version": "0.0.1",
     "description": "",
-    "main": "dist/index.js",
-    "type": "module",
+    "main": "bin/index.js",
+    "bin": {
+        "spotify": "bin/index.js"
+    },
     "scripts": {
-        "dev": "node --watch src/index.js",
-        "start": "node  src/index.js"
+        "dev": "node --watch bin/index.js",
+        "start": "node  bin/index.js"
     },
     "keywords": [],
     "author": "",
     "license": "ISC",
-    "devDependencies": {
-        "@types/node": "^18.11.18",
-        "typescript": "^4.9.4"
-    },
     "dependencies": {
-        "chalk": "^5.2.0",
-        "commander": "^10.0.0"
+        "chalk": "^4.1.2",
+        "commander": "^10.0.0",
+        "open": "^8.4.0"
     }
 }
