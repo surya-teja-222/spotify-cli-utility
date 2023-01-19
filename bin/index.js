@@ -3,8 +3,10 @@
 const { Command } = require("commander");
 const chalk = require('chalk');
 const open = require('open');
+const Conf = require('conf');
 
 const program = new Command();
+const config = new Conf({projectName: 'spotify-cli'});
 
 program
     .name("Spotify CLI Utility")
