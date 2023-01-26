@@ -1,22 +1,37 @@
 {
-    "name": "spotify-cli-util",
-    "version": "0.0.1",
-    "description": "",
-    "main": "bin/index.js",
-    "bin": {
-        "spotify": "bin/index.js"
-    },
-    "scripts": {
-        "dev": "node --watch bin/index.js",
-        "start": "node  bin/index.js"
-    },
-    "keywords": [],
-    "author": "",
-    "license": "ISC",
-    "dependencies": {
-        "chalk": "^4.1.2",
-        "commander": "^10.0.0",
-        "conf": "^11.0.1",
-        "open": "^8.4.0"
-    }
+	"name": "spotify-cli-util",
+	"version": "0.0.3",
+	"description": "",
+	"main": "src/index.js",
+	"bin": {
+		"spotify": "src/index.js"
+	},
+	"scripts": {
+		"dev": "node --watch bin/index.js",
+		"start": "node  bin/index.js",
+		"watch": "tsc --watch",
+		"dev2": "tsc && node bin/index.js"
+	},
+	"keywords": [
+		"spotify",
+		"cli",
+		"util",
+		"spotify-cli-util",
+		"command line tool",
+		"spotify-cli",
+		"spotify dev tools"
+	],
+	"author": "",
+	"license": "ISC",
+	"dependencies": {
+		"@types/node": "^18.11.18",
+		"chalk": "^4.1.2",
+		"commander": "^10.0.0",
+		"conf": "^10.0.1",
+		"dotenv": "^16.0.3",
+		"open": "^8.4.0"
+	},
+	"devDependencies": {
+		"typescript": "^4.9.4"
+	}
 }

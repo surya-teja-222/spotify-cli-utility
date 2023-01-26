@@ -1,6 +1,6 @@
 # Spotify CLI Utility
 
-## A simple command line utility for controlling any Spotify client.
+A simple command line utility for controlling any Spotify client.
 
 ### Installation
 
@@ -9,7 +9,7 @@
 
 ### Usage
 
--   Use `spotify-cli-util --help` to see all available commands.
+-   Use `spotify --help` to see all available commands.
 -   `auth` Manage user authentication for the CLI utility.
 -   `browse` - Open the current track, album, artist, or playlist in the default browser
 -   `devices` - Manage active devices/ Use a specific device.
@@ -28,12 +28,12 @@
 
 ### Examples
 
--   `spotify-cli-util auth` - Authenticate the CLI utility.
--   `spotify-cli-util play` - Resume playback.
--   `spotify-cli-util play --track "The Less I Know The Better"` - Search for a track and play it.
--   `spotify-cli-util play --album "Currents"` - Search for an album and play it.
--   `spotify-cli-util play --playlist "My Playlist"` - Search for a playlist and play it.
--   `spotify-cli-util play --artist "Tame Impala"` - Search for an artist and play it.
+-   `spotify auth` - Authenticate the CLI utility.
+-   `spotify play` - Resume playback.
+-   `spotify play --track "The Less I Know The Better"` - Search for a track and play it.
+-   `spotify play --album "Currents"` - Search for an album and play it.
+-   `spotify play --playlist "My Playlist"` - Search for a playlist and play it.
+-   `spotify play --artist "Tame Impala"` - Search for an artist and play it.
 
 ### Contributing
 
