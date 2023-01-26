@@ -10,9 +10,11 @@ A simple command line utility for controlling any Spotify client.
 ### Usage
 
 -   Use `spotify --help` to see all available commands.
--   `auth` Manage user authentication for the CLI utility.
+-   `login` Manage user authentication for the CLI utility.
 -   `browse` - Open the current track, album, artist, or playlist in the default browser
--   `devices` - Manage active devices/ Use a specific device.
+-   `current` - Get the current track.
+-   `devices` - Manage active devices/ .
+-   `switch` - Use a specific device from list of available devices.
 -   `history` - Get History of your recently played tracks.
 -   `next` - Play the next track in the queue.
 -   `pause` - Pause playback.
@@ -28,12 +30,12 @@ A simple command line utility for controlling any Spotify client.
 
 ### Examples
 
--   `spotify auth` - Authenticate the CLI utility.
+-   `spotify login` - Authenticate the CLI utility.
 -   `spotify play` - Resume playback.
--   `spotify play --track "The Less I Know The Better"` - Search for a track and play it.
--   `spotify play --album "Currents"` - Search for an album and play it.
--   `spotify play --playlist "My Playlist"` - Search for a playlist and play it.
--   `spotify play --artist "Tame Impala"` - Search for an artist and play it.
+-   `spotify play "The Less I Know The Better"` - Search for a track and play it.
+-   `spotify play "Currents"` - Search for an album and play it.
+-   `spotify play "My Playlist"` - Search for a playlist and play it.
+-   `spotify play "Tame Impala"` - Search for an artist and play it.
 
 ### Contributing
 

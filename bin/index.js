@@ -4,13 +4,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.config = void 0;
 const { Command } = require("commander");
 const chalk = require("chalk");
 const Conf = require("conf");
 const program = new Command();
 const config = new Conf({ projectName: "spotify-cli" });
-exports.config = config;
 config.set("Developer", "Surya Teja Reddy");
 const utility_1 = __importDefault(require("./utility"));
 const sp = new utility_1.default();
@@ -31,7 +29,6 @@ program
     .command("login")
     .description("Authenticate with Spotify")
     .action(() => {
-    // ! TODO: Implement Login
     sp.login();
 });
 program
@@ -40,6 +37,7 @@ program
     .action(() => {
     config.clear();
     console.log(chalk.blue("Logged out successfully!"));
+    process.exit(0);
 });
 program
     .command("browse")
@@ -52,8 +50,20 @@ program
     .command("devices")
     .description("List all available devices")
     .action(() => {
-    console.log("Listing all available devices...");
-    // TODO: Implement Listing Devices
+    sp.devices();
+});
+program
+    .command("switch")
+    .description("Switch to a different device")
+    .option("-d, --device <device>", "Device ID")
+    .action((options) => {
+    sp.switchDevice(options.device);
+});
+program
+    .command("current")
+    .description("List the currently playing track with details.")
+    .action(() => {
+    sp.currentlyPlaying();
 });
 program
     .command("history")
@@ -66,5 +76,6 @@ program
     .description("Developer Info")
     .action(() => {
     console.log(config.store);
+    process.exit(0);
 });
 program.parse();

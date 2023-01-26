@@ -30,7 +30,6 @@ program
 	.command("login")
 	.description("Authenticate with Spotify")
 	.action(() => {
-		// ! TODO: Implement Login
 		sp.login();
 	});
 
@@ -40,6 +39,7 @@ program
 	.action(() => {
 		config.clear();
 		console.log(chalk.blue("Logged out successfully!"));
+		process.exit(0);
 	});
 
 program
@@ -54,8 +54,22 @@ program
 	.command("devices")
 	.description("List all available devices")
 	.action(() => {
-		console.log("Listing all available devices...");
-		// TODO: Implement Listing Devices
+		sp.devices();
+	});
+
+program
+	.command("switch")
+	.description("Switch to a different device")
+	.option("-d, --device <device>", "Device ID")
+	.action((options: { device?: number }) => {
+		sp.switchDevice(options.device);
+	});
+
+program
+	.command("current")
+	.description("List the currently playing track with details.")
+	.action(() => {
+		sp.currentlyPlaying();
 	});
 
 program
@@ -70,8 +84,7 @@ program
 	.description("Developer Info")
 	.action(() => {
 		console.log(config.store);
+		process.exit(0);
 	});
 
 program.parse();
-
-export { config };
