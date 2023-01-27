@@ -81,6 +81,35 @@ program
 	});
 
 program
+	.command("play")
+	.description("Play a track")
+	.option("-t, --track <track>", "Track Name")
+	.option("-a, --artist <artist>", "Artist Name")
+	.option("-al, --album <album>", "Album Name")
+	.option(
+		"-p, --playlist <playlist>",
+		"Playlist Name to play current user's playlist"
+	)
+	.option("-d, --device <device>", "Device ID")
+	.action(
+		(options: {
+			track?: string;
+			artist?: string;
+			playlist?: string;
+			device?: number;
+			album?: string;
+		}) => {
+			sp.play(
+				options.track,
+				options.artist,
+				options.playlist,
+				options.device,
+				options.album
+			);
+		}
+	);
+
+program
 	.command("dev")
 	.description("Developer Info")
 	.action(() => {

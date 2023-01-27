@@ -22,6 +22,11 @@ export default class SpotifyCLI {
 		"user-read-recently-played",
 		"user-read-playback-position",
 		"user-top-read",
+		"user-read-playback-state",
+		"playlist-read-collaborative",
+		"playlist-modify-public",
+		"playlist-modify-private",
+		"playlist-read-private",
 	];
 
 	private headers = {
@@ -36,7 +41,7 @@ export default class SpotifyCLI {
 			// return false;
 			process.exit(0);
 		}
-		if (config.get("expires-in") < Date.now()) {
+		if (config.get("expires-in") < Date.now() - 2000) {
 			const re = await this.getNewAccessToken().then(() => {
 				return true;
 			});
@@ -285,7 +290,9 @@ export default class SpotifyCLI {
 				console.log(chalk.green("Switched device!"));
 				process.exit(0);
 			} else {
-				console.log(chalk.red("Failed to switch device!"));
+				console.log(
+					chalk.red("Failed to switch device! Incorrect device ID!")
+				);
 				process.exit(0);
 			}
 		}
@@ -323,5 +330,170 @@ export default class SpotifyCLI {
 		return re.items;
 	}
 
-	
+	async play(
+		track: string | undefined,
+		artist: string | undefined,
+		playlist: string | undefined,
+		device: number | undefined,
+		album: string | undefined
+	) {
+		await this.requiresLogin();
+
+		if (!track && !artist && !playlist && !device && !album) {
+			const res = await fetch(
+				"https://api.spotify.com/v1/me/player/play",
+				{
+					method: "PUT",
+					headers: this.headers,
+				}
+			);
+			const re = await res.json();
+			if (res.status == 204) {
+				console.log(chalk.green("Resumed playback!"));
+			} else if (res.status == 403) {
+			} else {
+				console.log(chalk.red("Failed to resume playback!"));
+			}
+		} else if (device && !track && !artist && !playlist) {
+			await this.switchDevice(device);
+		} else {
+			let id = await this.search(track ? track : album, artist, playlist);
+			if (id) {
+				if (id.status != 400) {
+					var query = null;
+					if (device) {
+						query = new URLSearchParams({
+							device_id: device.toString(),
+						});
+					}
+					var body: any = {};
+					if (id.trackId) {
+						body = {
+							context_uri: id.albumId
+								? id.albumId
+								: id.artistId
+								? id.artistId
+								: id.playlistId,
+							offset: {
+								uri: id.trackId,
+							},
+						};
+					} else {
+						body = {
+							context_uri: id.albumId
+								? id.albumId
+								: id.artistId
+								? id.artistId
+								: id.playlistId,
+						};
+					}
+
+					const res = await fetch(
+						`https://api.spotify.com/v1/me/player/play?${
+							query ? query.toString() : ""
+						}`,
+						{
+							method: "PUT",
+							headers: this.headers,
+							body: JSON.stringify(body),
+						}
+					);
+					if (res.status == 204) {
+						var output;
+						if (id.trackName) {
+							output = `Playing ${id.trackName} by ${id.artistName}`;
+						} else if (id.playlistName) {
+							output = `Playing ${id.playlistName}`;
+						} else if (id.albumName) {
+							output = `Playing ${id.albumName}`;
+						}
+						console.log(chalk.green(output));
+					} else {
+						console.log(chalk.red("Failed to play song!"));
+					}
+				} else {
+					console.log(chalk.red("Invalid search!"));
+				}
+			} else {
+				console.log(chalk.red("Failed to play song!"));
+			}
+		}
+		process.exit(0);
+	}
+	async search(
+		track: string | undefined,
+		artist: string | undefined,
+		playlist: string | undefined
+	): Promise<{
+		status: number;
+		trackId?: string;
+		artistId?: string;
+		playlistId?: string;
+		albumId?: string;
+		trackName?: string;
+		artistName?: string;
+		playlistName?: string;
+		albumName?: string;
+	}> {
+		if (track) {
+			const body = new URLSearchParams({
+				q: `${track} ${artist ? artist : ""}`,
+				type: "track",
+			});
+			const res = await fetch(
+				`https://api.spotify.com/v1/search?${body}`,
+				{
+					headers: this.headers,
+					method: "GET",
+				}
+			);
+			const re = await res.json();
+			if (re.tracks.items.length > 0) {
+				return {
+					status: 200,
+					trackId: re.tracks.items[0].uri,
+					albumId: re.tracks.items[0].album.uri,
+					artistName: re.tracks.items[0].artists[0].name,
+					trackName: re.tracks.items[0].name,
+				};
+			}
+		} else if (artist) {
+			const qp = new URLSearchParams({
+				q: `${artist}`,
+				type: "artist",
+			});
+			const res = await fetch(`https://api.spotify.com/v1/search?${qp}`, {
+				headers: this.headers,
+			});
+			const re = await res.json();
+			if (re.artists.items.length > 0) {
+				return {
+					status: 200,
+					artistId: re.artists.items[0].uri,
+					artistName: re.artists.items[0].name,
+				};
+			}
+		} else if (playlist) {
+			const res = await fetch("https://api.spotify.com/v1/me/playlists", {
+				headers: this.headers,
+			});
+			const re = await res.json();
+			if (re.items.length > 0) {
+				const match = re.items.find(
+					(item: any) =>
+						item.name.toLowerCase() === playlist.toLowerCase()
+				);
+				if (match) {
+					return {
+						status: 200,
+						playlistId: match.uri,
+						playlistName: match.name,
+					};
+				}
+			}
+		}
+		return {
+			status: 400,
+		};
+	}
 }
