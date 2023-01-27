@@ -24,6 +24,7 @@ program
     .description("Get current version")
     .action(() => {
     console.log(`Version ${version}`);
+    process.exit(0);
 });
 program
     .command("login")
@@ -45,6 +46,7 @@ program
     .argument("<input>")
     .action((input) => {
     sp.browse(input);
+    process.exit(0);
 });
 program
     .command("devices")
@@ -69,7 +71,7 @@ program
     .command("history")
     .description("List your recently played tracks.")
     .action(() => {
-    // TODO: Implement Listing History
+    sp.recentlyPlayed();
 });
 program
     .command("dev")

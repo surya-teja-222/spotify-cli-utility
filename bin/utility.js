@@ -40,11 +40,13 @@ class SpotifyCLI {
             if (!config.get("access-token")) {
                 console.log(chalk.red("You are not logged in!"));
                 console.log(chalk.blue("Login to continue..."));
-                return false;
+                // return false;
+                process.exit(0);
             }
             if (config.get("expires-in") < Date.now()) {
-                const re = yield this.getNewAccessToken();
-                return true;
+                const re = yield this.getNewAccessToken().then(() => {
+                    return true;
+                });
             }
         });
     }
@@ -125,12 +127,12 @@ class SpotifyCLI {
                     .then((response) => {
                     config.set("access-token", response.access_token);
                     config.set("expires-in", response.expires_in * 1000 + Date.now());
+                    // ! TODO: REMOVE NEXT LINE
+                    console.warn("Access token refreshed!");
                 })
                     .catch((err) => {
-                    console.log("Failed to log in! Try again later.");
+                    console.error("Failed to log in! Try again later.");
                 });
-                // ! TODO: REMOVE NEXT LINE
-                console.log("Access token refreshed!");
             }
             else {
                 console.log(chalk.red("You are not logged in!"));
@@ -139,35 +141,36 @@ class SpotifyCLI {
         });
     }
     currentlyPlaying() {
-        this.requiresLogin();
-        fetch("https://api.spotify.com/v1/me/player/currently-playing", {
-            headers: this.headers,
-        })
-            .then((response) => __awaiter(this, void 0, void 0, function* () {
-            const re = yield response.json();
-            const image = yield (yield fetch(re.item.album.images[0].url)).arrayBuffer();
-            const tLink = link(re.item.name, re.item.external_urls.spotify);
-            console.log(chalk.magenta.bold(`Currently playing: ${tLink} `));
-            console.log(chalk.green(`By ` +
-                chalk.blue(re.item.artists[0].name) +
-                ` from album `) + chalk.blue(re.item.album.name));
-            var currentTime = Math.floor((re.progress_ms / 1000 / 60) % 60) +
-                ":" +
-                Math.floor((re.progress_ms / 1000) % 60);
-            var totalTime = Math.floor((re.item.duration_ms / 1000 / 60) % 60) +
-                ":" +
-                Math.floor((re.item.duration_ms / 1000) % 60);
-            console.log(chalk.green(`\n` +
-                `Progress: ` +
-                chalk.blue(currentTime) +
-                `/` +
-                chalk.blue(totalTime)));
-            process.exit(0);
-        }))
-            .catch((err) => {
-            console.log(chalk.red("Nothing is currently playing!"));
-            console.log("To play a song, use play <song name> or play <song name> <artist name>");
-            process.exit(0);
+        return __awaiter(this, void 0, void 0, function* () {
+            yield this.requiresLogin();
+            fetch("https://api.spotify.com/v1/me/player/currently-playing", {
+                headers: this.headers,
+            })
+                .then((response) => __awaiter(this, void 0, void 0, function* () {
+                const re = yield response.json();
+                const tLink = link(re.item.name, re.item.external_urls.spotify);
+                console.log(chalk.magenta.bold(`Currently playing: ${tLink} `));
+                console.log(chalk.green(`By ` +
+                    chalk.blue(re.item.artists[0].name) +
+                    ` from album `) + chalk.blue(re.item.album.name));
+                var currentTime = Math.floor((re.progress_ms / 1000 / 60) % 60) +
+                    ":" +
+                    Math.floor((re.progress_ms / 1000) % 60);
+                var totalTime = Math.floor((re.item.duration_ms / 1000 / 60) % 60) +
+                    ":" +
+                    Math.floor((re.item.duration_ms / 1000) % 60);
+                console.log(chalk.green(`\n` +
+                    `Progress: ` +
+                    chalk.blue(currentTime) +
+                    `/` +
+                    chalk.blue(totalTime)));
+                process.exit(0);
+            }))
+                .catch((err) => {
+                console.log(chalk.red("Nothing is currently playing!"));
+                console.log("To play a song, use play <song name> or play <song name> <artist name>");
+                process.exit(0);
+            });
         });
     }
     devices(flag = 0) {
@@ -246,6 +249,29 @@ class SpotifyCLI {
                     process.exit(0);
                 }
             }
+        });
+    }
+    recentlyPlayed() {
+        return __awaiter(this, void 0, void 0, function* () {
+            yield this.requiresLogin();
+            const re = yield this.getRecentlyPlayed();
+            console.log(chalk.green("Recently played:"));
+            re.forEach((item) => {
+                console.log(chalk.blue(item.track.name) +
+                    " by " +
+                    chalk.blue(item.track.artists[0].name));
+            });
+            process.exit(0);
+        });
+    }
+    getRecentlyPlayed() {
+        return __awaiter(this, void 0, void 0, function* () {
+            yield this.requiresLogin();
+            const res = yield fetch("https://api.spotify.com/v1/me/player/recently-played", {
+                headers: this.headers,
+            });
+            const re = yield res.json();
+            return re.items;
         });
     }
 }

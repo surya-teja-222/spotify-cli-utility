@@ -7,7 +7,6 @@ const program = new Command();
 
 const config = new Conf({ projectName: "spotify-cli" });
 config.set("Developer", "Surya Teja Reddy");
-
 import SpotifyCLI from "./utility";
 const sp = new SpotifyCLI();
 // ! Import the version from package.json
@@ -24,6 +23,7 @@ program
 	.description("Get current version")
 	.action(() => {
 		console.log(`Version ${version}`);
+		process.exit(0);
 	});
 
 program
@@ -48,6 +48,7 @@ program
 	.argument("<input>")
 	.action((input: string) => {
 		sp.browse(input);
+		process.exit(0);
 	});
 
 program
@@ -76,7 +77,7 @@ program
 	.command("history")
 	.description("List your recently played tracks.")
 	.action(() => {
-		// TODO: Implement Listing History
+		sp.recentlyPlayed();
 	});
 
 program

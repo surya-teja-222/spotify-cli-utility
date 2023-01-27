@@ -33,11 +33,13 @@ export default class SpotifyCLI {
 		if (!config.get("access-token")) {
 			console.log(chalk.red("You are not logged in!"));
 			console.log(chalk.blue("Login to continue..."));
-			return false;
+			// return false;
+			process.exit(0);
 		}
 		if (config.get("expires-in") < Date.now()) {
-			const re = await this.getNewAccessToken();
-			return true;
+			const re = await this.getNewAccessToken().then(() => {
+				return true;
+			});
 		}
 	}
 	async browse(input: string) {
@@ -143,31 +145,26 @@ export default class SpotifyCLI {
 						"expires-in",
 						response.expires_in * 1000 + Date.now()
 					);
+					// ! TODO: REMOVE NEXT LINE
+					console.warn("Access token refreshed!");
 				})
 				.catch((err) => {
-					console.log("Failed to log in! Try again later.");
+					console.error("Failed to log in! Try again later.");
 				});
-			// ! TODO: REMOVE NEXT LINE
-			console.log("Access token refreshed!");
 		} else {
 			console.log(chalk.red("You are not logged in!"));
 			console.log(chalk.blue("Login to continue..."));
 		}
 	}
-	currentlyPlaying() {
-		this.requiresLogin();
+	async currentlyPlaying() {
+		await this.requiresLogin();
 
 		fetch("https://api.spotify.com/v1/me/player/currently-playing", {
 			headers: this.headers,
 		})
 			.then(async (response) => {
 				const re = await response.json();
-				const image = await (
-					await fetch(re.item.album.images[0].url)
-				).arrayBuffer();
-
 				const tLink = link(re.item.name, re.item.external_urls.spotify);
-
 				console.log(chalk.magenta.bold(`Currently playing: ${tLink} `));
 				console.log(
 					chalk.green(
@@ -293,4 +290,38 @@ export default class SpotifyCLI {
 			}
 		}
 	}
+
+	async recentlyPlayed() {
+		await this.requiresLogin();
+
+		const re = await this.getRecentlyPlayed();
+
+		console.log(chalk.green("Recently played:"));
+		re.forEach((item: any) => {
+			console.log(
+				chalk.blue(item.track.name) +
+					" by " +
+					chalk.blue(item.track.artists[0].name)
+			);
+		});
+
+		process.exit(0);
+	}
+
+	private async getRecentlyPlayed() {
+		await this.requiresLogin();
+
+		const res = await fetch(
+			"https://api.spotify.com/v1/me/player/recently-played",
+			{
+				headers: this.headers,
+			}
+		);
+
+		const re = await res.json();
+
+		return re.items;
+	}
+
+	
 }
