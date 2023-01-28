@@ -592,5 +592,37 @@ class SpotifyCLI {
             process.exit(0);
         });
     }
+    toggle() {
+        return __awaiter(this, void 0, void 0, function* () {
+            yield this.requiresLogin();
+            const res = yield fetch("https://api.spotify.com/v1/me/player", {
+                headers: this.headers,
+            });
+            const re = yield res.json();
+            if (re.is_playing) {
+                yield this.pause();
+            }
+            else {
+                yield this.play();
+            }
+        });
+    }
+    volume(input) {
+        return __awaiter(this, void 0, void 0, function* () {
+            yield this.requiresLogin();
+            const body = new URLSearchParams({
+                volume_percent: input,
+            });
+            const res = yield fetch(`https://api.spotify.com/v1/me/player/volume?${body}`, {
+                method: "PUT",
+                headers: this.headers,
+                body: JSON.stringify(body),
+            });
+            if (res.status == 204) {
+                console.log(chalk.green(`Set volume to ${input}!`));
+            }
+            process.exit(0);
+        });
+    }
 }
 exports.default = SpotifyCLI;

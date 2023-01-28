@@ -403,11 +403,11 @@ export default class SpotifyCLI {
 	}
 
 	async play(
-		track: string | undefined,
-		artist: string | undefined,
-		playlist: string | undefined,
-		device: number | undefined,
-		album: string | undefined
+		track?: string,
+		artist?: string,
+		playlist?: string,
+		device?: number,
+		album?: string
 	) {
 		await this.requiresLogin();
 
@@ -675,6 +675,42 @@ export default class SpotifyCLI {
 			console.log(chalk.green(`Set shuffle to ${input}!`));
 		} else {
 			console.log(chalk.red("Failed to set shuffle!"));
+		}
+		process.exit(0);
+	}
+
+	async toggle() {
+		await this.requiresLogin();
+
+		const res = await fetch("https://api.spotify.com/v1/me/player", {
+			headers: this.headers,
+		});
+		const re = await res.json();
+		if (re.is_playing) {
+			await this.pause();
+		} else {
+			await this.play();
+		}
+	}
+
+	async volume(input: string) {
+		await this.requiresLogin();
+
+		const body = new URLSearchParams({
+			volume_percent: input,
+		});
+
+		const res = await fetch(
+			`https://api.spotify.com/v1/me/player/volume?${body}`,
+			{
+				method: "PUT",
+				headers: this.headers,
+				body: JSON.stringify(body),
+			}
+		);
+
+		if (res.status == 204) {
+			console.log(chalk.green(`Set volume to ${input}!`));
 		}
 		process.exit(0);
 	}

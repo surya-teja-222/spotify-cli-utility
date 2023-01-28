@@ -23,7 +23,6 @@ A simple command line utility for controlling any Spotify client.
 -   `queue` - Add a track or album to your queue.
 -   `repeat` - Turn repeat on (all/track) or off.
 -   `shuffle` - Turn shuffle on or off.
--   `status` - Describe the current playback session.
 -   `toggle` - Resume any paused playback, or pause it if already running.
 -   `top` - List your top tracks or artists.
 -   `volume` - Control the active device's volume level (0-100).
@@ -32,10 +31,10 @@ A simple command line utility for controlling any Spotify client.
 
 -   `spotify login` - Authenticate the CLI utility.
 -   `spotify play` - Resume playback.
--   `spotify play "The Less I Know The Better"` - Search for a track and play it.
--   `spotify play "Currents"` - Search for an album and play it.
--   `spotify play "My Playlist"` - Search for a playlist and play it.
--   `spotify play "Tame Impala"` - Search for an artist and play it.
+-   `spotify play -t "The Less I Know The Better"` - Search for a track and play it.
+-   `spotify play -al "Currents"` - Search for an album and play it.
+-   `spotify play -p "My Playlist"` - Search for a playlist and play it.
+-   `spotify play -a "Tame Impala"` - Search for an artist and play it.
 
 ### Contributing
 

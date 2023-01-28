@@ -182,4 +182,29 @@ program
 		sp.shuffle(input);
 	});
 
+program
+	.command("toggle")
+	.description("Toggle play/pause")
+	.action(() => {
+		sp.toggle();
+	});
+
+program
+	.command("top")
+	.description("Get your top tracks/artists")
+	.action(() => {});
+
+program
+	.command("volume")
+	.description("Set the volume")
+	.argument("<input>")
+	.action((input: string) => {
+		// check if input is a number
+		if (isNaN(Number(input))) {
+			console.log(chalk.red("Invalid input. Please enter a number"));
+			process.exit(1);
+		}
+		sp.volume(input);
+	});
+
 program.parse();
