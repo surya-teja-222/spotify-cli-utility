@@ -1,4 +1,5 @@
 import { program } from "commander";
+import { randomUUID } from "crypto";
 
 const openB = require("open");
 const chalk = require("chalk");
@@ -63,6 +64,8 @@ export default class SpotifyCLI {
 
 	async login() {
 		console.log("Logging in...");
+		// generate a random UUID
+		const uuid = randomUUID();
 		const url =
 			"https://accounts.spotify.com/authorize?" +
 			new URLSearchParams({
@@ -70,6 +73,7 @@ export default class SpotifyCLI {
 				client_id: process.env.CLIENT_ID as string,
 				redirect_uri: process.env.REDIRECT_URI as string,
 				scope: this.scopes.join(" "),
+				state: uuid,
 			});
 		await openB(url);
 
@@ -79,47 +83,115 @@ export default class SpotifyCLI {
 		console.log(chalk.underline.blue(url));
 
 		// Input from user
-		await readline.question(
-			"Enter the code from browser to continue: ",
-			(code: string) => {
-				config.set("access-token", code);
-				readline.close();
+		// await readline.question(
+		// 	"Enter the code from browser to continue: ",
+		// 	(code: string) => {
+		// 		config.set("access-token", code);
+		// 		readline.close();
 
-				fetch("https://accounts.spotify.com/api/token", {
-					method: "POST",
-					// @ts-ignore
-					body: new URLSearchParams({
-						code: code,
-						redirect_uri: process.env.REDIRECT_URI,
-						grant_type: "authorization_code",
-					}),
-					headers: {
-						Authorization:
-							"Basic " +
-							new Buffer(
-								process.env.CLIENT_ID +
-									":" +
-									process.env.CLIENT_SECRET
-							).toString("base64"),
-						"Content-Type": "application/x-www-form-urlencoded",
-					},
-				})
-					.then(async (response) => {
-						const re = await response.json();
-						config.set("access-token", re.access_token);
-						config.set("refresh-token", re.refresh_token);
-						config.set("expires-in", re.expires_in + Date.now());
-						console.log(
-							chalk.green(
-								"Successfully logged in! You can now continue to use Spotify from your terminal."
-							)
-						);
-					})
-					.catch((err) => {
-						console.log("Failed to log in! Try again later.");
-					});
+		// 		fetch("https://accounts.spotify.com/api/token", {
+		// 			method: "POST",
+		// 			// @ts-ignore
+		// 			body: new URLSearchParams({
+		// 				code: code,
+		// 				redirect_uri: process.env.REDIRECT_URI,
+		// 				grant_type: "authorization_code",
+		// 			}),
+		// 			headers: {
+		// 				Authorization:
+		// 					"Basic " +
+		// 					new Buffer(
+		// 						process.env.CLIENT_ID +
+		// 							":" +
+		// 							process.env.CLIENT_SECRET
+		// 					).toString("base64"),
+		// 				"Content-Type": "application/x-www-form-urlencoded",
+		// 			},
+		// 		})
+		// 			.then(async (response) => {
+		// 				const re = await response.json();
+		// 				config.set("access-token", re.access_token);
+		// 				config.set("refresh-token", re.refresh_token);
+		// 				config.set("expires-in", re.expires_in + Date.now());
+		// 				console.log(
+		// 					chalk.green(
+		// 						"Successfully logged in! You can now continue to use Spotify from your terminal."
+		// 					)
+		// 				);
+		// 			})
+		// 			.catch((err) => {
+		// 				console.log("Failed to log in! Try again later.");
+		// 			});
+		// 	}
+		// );
+
+		// Wait for 5 seconds
+		await new Promise((resolve) => setTimeout(resolve, 5000));
+
+		const code = await this.getFromServer(uuid);
+		if (code) {
+			config.set("access-token", code);
+			const res = await fetch("https://accounts.spotify.com/api/token", {
+				method: "POST",
+				body: new URLSearchParams({
+					code: code,
+					redirect_uri: process.env.REDIRECT_URI as string,
+					grant_type: "authorization_code",
+				}),
+				headers: {
+					Authorization:
+						"Basic " +
+						new Buffer(
+							process.env.CLIENT_ID +
+								":" +
+								process.env.CLIENT_SECRET
+						).toString("base64"),
+					"Content-Type": "application/x-www-form-urlencoded",
+				},
+			});
+
+			if (res.status !== 200) {
+				console.log("Failed to log in! Try again later.");
+				process.exit(0);
+			}
+			const re = await res.json();
+			config.set("access-token", re.access_token);
+			config.set("refresh-token", re.refresh_token);
+			config.set("expires-in", re.expires_in + Date.now());
+			console.log(
+				chalk.green(
+					"Successfully logged in! You can now continue to use Spotify from your terminal."
+				)
+			);
+		} else {
+			console.log("Failed to log in! Try again later.");
+		}
+
+		process.exit(0);
+	}
+
+	private async getFromServer(state: string): Promise<string> {
+		const parms = new URLSearchParams({
+			state: state,
+		});
+		const res = await fetch(
+			`${process.env.REDIRECT_URI}get?${parms.toString()}` as string,
+			{
+				headers: {
+					"Content-Type": "application/json",
+				},
+				method: "GET",
+				credentials: "include",
 			}
 		);
+
+		const re = await res.json();
+		if (re.code) {
+			return re.code;
+		} else {
+			await new Promise((resolve) => setTimeout(resolve, 5000));
+			return await this.getFromServer(state);
+		}
 	}
 
 	async getNewAccessToken() {
