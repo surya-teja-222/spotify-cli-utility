@@ -419,7 +419,6 @@ export default class SpotifyCLI {
 					headers: this.headers,
 				}
 			);
-			const re = await res.json();
 			if (res.status == 204) {
 				console.log(chalk.green("Resumed playback!"));
 			} else if (res.status == 403) {
@@ -567,5 +566,116 @@ export default class SpotifyCLI {
 		return {
 			status: 400,
 		};
+	}
+
+	async pause() {
+		await this.requiresLogin();
+
+		const res = await fetch("https://api.spotify.com/v1/me/player/pause", {
+			method: "PUT",
+			headers: this.headers,
+		});
+		if (res.status == 204) {
+			console.log(chalk.green("Paused playback!"));
+		} else {
+			console.log(chalk.red("Failed to pause playback!"));
+		}
+		process.exit(0);
+	}
+
+	async next() {
+		await this.requiresLogin();
+
+		const res = await fetch("https://api.spotify.com/v1/me/player/next", {
+			method: "POST",
+			headers: this.headers,
+		});
+		process.exit(0);
+	}
+
+	async previous() {
+		await this.requiresLogin();
+
+		const res = await fetch(
+			"https://api.spotify.com/v1/me/player/previous",
+			{
+				method: "POST",
+				headers: this.headers,
+			}
+		);
+		process.exit(0);
+	}
+
+	async queue(track: string) {
+		await this.requiresLogin();
+
+		const res = await this.search(track, undefined, undefined);
+		if (res.status == 200) {
+			const body = new URLSearchParams({
+				uri: res.trackId as string,
+			});
+			const k = await fetch(
+				`https://api.spotify.com/v1/me/player/queue?${body}`,
+				{
+					method: "POST",
+					headers: this.headers,
+				}
+			);
+			if (k.status == 204) {
+				console.log(chalk.green(`Queued ${res.trackName}!`));
+			} else {
+				console.log(chalk.red("Failed to queue song!"));
+			}
+		}
+
+		process.exit(0);
+	}
+
+	async repeat(input: "off" | "track" | "context") {
+		await this.requiresLogin();
+
+		const body = new URLSearchParams({
+			state: input,
+		});
+
+		const res = await fetch(
+			`https://api.spotify.com/v1/me/player/repeat?${body}`,
+			{
+				method: "PUT",
+				headers: this.headers,
+				body: JSON.stringify(body),
+			}
+		);
+
+		if (res.status == 204) {
+			console.log(chalk.green(`Set repeat to ${input}!`));
+		} else {
+			console.log(chalk.red("Failed to set repeat!"));
+		}
+		process.exit(0);
+	}
+
+	async shuffle(input: boolean) {
+		await this.requiresLogin();
+
+		const body = new URLSearchParams({
+			state: input ? "true" : "false",
+		});
+
+		const res = await fetch(
+			`https://api.spotify.com/v1/me/player/shuffle?${body}`,
+			{
+				method: "PUT",
+				headers: this.headers,
+				body: JSON.stringify(body),
+			}
+		);
+
+		if (res.status == 204) {
+			console.log(chalk.green(`Set shuffle to ${input}!`));
+		} else {
+			console.log(chalk.red("Failed to set shuffle!"));
+		}
+		process.exit(0);
 	}
 }

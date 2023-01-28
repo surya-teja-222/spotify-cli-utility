@@ -85,10 +85,61 @@ program
     sp.play(options.track, options.artist, options.playlist, options.device, options.album);
 });
 program
+    .command("pause")
+    .description("Pause the currently playing track")
+    .action(() => {
+    sp.pause();
+});
+program
     .command("dev")
     .description("Developer Info")
     .action(() => {
     console.log(config.store);
     process.exit(0);
+});
+program
+    .command("next")
+    .description("Skip to the next track")
+    .action(() => {
+    sp.next();
+});
+program
+    .command("prev")
+    .description("Skip to the previous track")
+    .action(() => {
+    sp.previous();
+});
+program
+    .command("queue")
+    .description("Add a track to the queue")
+    .argument("<input>")
+    .action((input) => {
+    sp.queue(input);
+});
+program
+    .command("repeat")
+    .description("Set repeat mode")
+    .argument("<input>")
+    .action((input) => {
+    const inputs = ["off", "track", "context"];
+    if (!inputs.includes(input)) {
+        console.log(chalk.red("Invalid input. Please enter one of the following: off, track, context"));
+        process.exit(1);
+    }
+    // @ts-ignore
+    sp.repeat(input);
+});
+program
+    .command("shuffle")
+    .description("Toggle shuffle")
+    .argument("<input>")
+    .action((input) => {
+    const inputs = ["on", "off"];
+    if (!inputs.includes(input)) {
+        console.log(chalk.red("Invalid input. Please enter one of the following: on, off"));
+        process.exit(1);
+    }
+    // @ts-ignore
+    sp.shuffle(input);
 });
 program.parse();

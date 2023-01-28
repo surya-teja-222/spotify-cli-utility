@@ -357,7 +357,6 @@ class SpotifyCLI {
                     method: "PUT",
                     headers: this.headers,
                 });
-                const re = yield res.json();
                 if (res.status == 204) {
                     console.log(chalk.green("Resumed playback!"));
                 }
@@ -493,6 +492,104 @@ class SpotifyCLI {
             return {
                 status: 400,
             };
+        });
+    }
+    pause() {
+        return __awaiter(this, void 0, void 0, function* () {
+            yield this.requiresLogin();
+            const res = yield fetch("https://api.spotify.com/v1/me/player/pause", {
+                method: "PUT",
+                headers: this.headers,
+            });
+            if (res.status == 204) {
+                console.log(chalk.green("Paused playback!"));
+            }
+            else {
+                console.log(chalk.red("Failed to pause playback!"));
+            }
+            process.exit(0);
+        });
+    }
+    next() {
+        return __awaiter(this, void 0, void 0, function* () {
+            yield this.requiresLogin();
+            const res = yield fetch("https://api.spotify.com/v1/me/player/next", {
+                method: "POST",
+                headers: this.headers,
+            });
+            process.exit(0);
+        });
+    }
+    previous() {
+        return __awaiter(this, void 0, void 0, function* () {
+            yield this.requiresLogin();
+            const res = yield fetch("https://api.spotify.com/v1/me/player/previous", {
+                method: "POST",
+                headers: this.headers,
+            });
+            process.exit(0);
+        });
+    }
+    queue(track) {
+        return __awaiter(this, void 0, void 0, function* () {
+            yield this.requiresLogin();
+            const res = yield this.search(track, undefined, undefined);
+            if (res.status == 200) {
+                const body = new URLSearchParams({
+                    uri: res.trackId,
+                });
+                const k = yield fetch(`https://api.spotify.com/v1/me/player/queue?${body}`, {
+                    method: "POST",
+                    headers: this.headers,
+                });
+                if (k.status == 204) {
+                    console.log(chalk.green(`Queued ${res.trackName}!`));
+                }
+                else {
+                    console.log(chalk.red("Failed to queue song!"));
+                }
+            }
+            process.exit(0);
+        });
+    }
+    repeat(input) {
+        return __awaiter(this, void 0, void 0, function* () {
+            yield this.requiresLogin();
+            const body = new URLSearchParams({
+                state: input,
+            });
+            const res = yield fetch(`https://api.spotify.com/v1/me/player/repeat?${body}`, {
+                method: "PUT",
+                headers: this.headers,
+                body: JSON.stringify(body),
+            });
+            if (res.status == 204) {
+                console.log(chalk.green(`Set repeat to ${input}!`));
+            }
+            else {
+                console.log(chalk.red("Failed to set repeat!"));
+            }
+            process.exit(0);
+        });
+    }
+    shuffle(input) {
+        return __awaiter(this, void 0, void 0, function* () {
+            yield this.requiresLogin();
+            const body = new URLSearchParams({
+                state: input ? "true" : "false",
+            });
+            const res = yield fetch(`https://api.spotify.com/v1/me/player/shuffle?${body}`, {
+                method: "PUT",
+                headers: this.headers,
+                body: JSON.stringify(body),
+            });
+            if (res.status == 204) {
+                console.log(chalk.green(`Set shuffle to ${input}!`));
+            }
+            else {
+                console.log(chalk.red("Failed to set shuffle!"));
+            }
+            process.exit(0);
         });
     }
 }
